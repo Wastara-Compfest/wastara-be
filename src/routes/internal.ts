@@ -9,6 +9,8 @@ import { db } from "../db/client.js";
 import { defectEvents } from "../db/schema.js";
 import { ApiError } from "../lib/api-error.js";
 import { nextDefectId } from "../lib/generate-defect-id.js";
+import { serializeDefectEvent } from "../lib/serializers.js";
+import { broadcast } from "../ws/hub.js";
 
 const MAX_EVIDENCE_BYTES = 500 * 1024;
 
@@ -86,19 +88,26 @@ internalRoute.post("/internal/defect-events", async (c) => {
   const buffer = Buffer.from(await evidence.arrayBuffer());
   await writeFile(path.join(config.evidenceDir, evidenceFilename), buffer);
 
-  await db.insert(defectEvents).values({
-    id,
-    machineId: body.machine_id,
-    mode: body.mode,
-    anomalyScore: body.anomaly_score,
-    bboxX: body.bbox.x,
-    bboxY: body.bbox.y,
-    bboxW: body.bbox.w,
-    bboxH: body.bbox.h,
-    frameStart: body.frames.start,
-    frameEnd: body.frames.end,
-    evidencePath: evidenceFilename,
-  });
+  const [inserted] = await db
+    .insert(defectEvents)
+    .values({
+      id,
+      machineId: body.machine_id,
+      mode: body.mode,
+      anomalyScore: body.anomaly_score,
+      bboxX: body.bbox.x,
+      bboxY: body.bbox.y,
+      bboxW: body.bbox.w,
+      bboxH: body.bbox.h,
+      frameStart: body.frames.start,
+      frameEnd: body.frames.end,
+      evidencePath: evidenceFilename,
+    })
+    .returning();
+
+  broadcast(
+    JSON.stringify({ type: "defect_alert", defect: serializeDefectEvent(inserted) }),
+  );
 
   return c.json({ id, status: "PENDING_REVIEW" }, 201);
 });

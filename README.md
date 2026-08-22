@@ -45,6 +45,6 @@ curl http://localhost:8000/health
 - [x] Fase 2 — Defects & verification API: `GET /defects`, `GET /defects/:id`, `POST /verification/:id/confirm|reject`, insert `labeled_samples`, serve `/evidence/*`.
 - [x] Fase 3 — Internal defect event ingestion: `POST /internal/defect-events` (auth `X-Internal-Key`, ID sekuensial `DEF-xxxxx`, simpan evidence crop).
 - [x] Fase 4 — Camera proxy: `POST /camera/start|stop`, `GET /camera/status` forward ke `MODEL_SERVICE_URL`, fallback `503 MODEL_SERVICE_UNAVAILABLE` kalau model service down.
-- [ ] Fase 5 — WebSocket `/ws/live`
+- [x] Fase 5 — WebSocket: `/ws/live` (publik, ke frontend) relay frame dari `/internal/ws/frames` (model service, auth `X-Internal-Key`) dan broadcast `defect_alert` saat defect event baru dibuat.
 - [ ] Fase 6 — Analytics
 - [ ] Fase 7 — Docker + polish
