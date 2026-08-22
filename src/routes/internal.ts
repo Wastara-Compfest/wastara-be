@@ -28,6 +28,9 @@ const payloadSchema = z.object({
     start: z.number().int(),
     end: z.number().int(),
   }),
+  session_id: z.string().uuid().optional(),
+  meter: z.number().nonnegative().optional(),
+  position: z.number().min(0).max(1).optional(),
 });
 
 export const internalRoute = new Hono();
@@ -102,6 +105,9 @@ internalRoute.post("/internal/defect-events", async (c) => {
       frameStart: body.frames.start,
       frameEnd: body.frames.end,
       evidencePath: evidenceFilename,
+      sessionId: body.session_id,
+      meter: body.meter,
+      position: body.position,
     })
     .returning();
 

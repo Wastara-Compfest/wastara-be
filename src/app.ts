@@ -3,6 +3,7 @@ import { logger } from "hono/logger";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { ApiError } from "./lib/api-error.js";
+import { analyticsRoute } from "./routes/analytics.js";
 import { cameraRoute } from "./routes/camera.js";
 import { defectsRoute } from "./routes/defects.js";
 import { evidenceRoute } from "./routes/evidence.js";
@@ -20,6 +21,7 @@ app.route("/", defectsRoute);
 app.route("/", verificationRoute);
 app.route("/", evidenceRoute);
 app.route("/", internalRoute);
+app.route("/", analyticsRoute);
 
 app.notFound((c) =>
   c.json(

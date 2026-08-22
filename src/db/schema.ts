@@ -45,6 +45,10 @@ export const defectEvents = pgTable("defect_events", {
 
   evidencePath: text("evidence_path"),
 
+  sessionId: uuid("session_id").references(() => productionSessions.id),
+  meter: doublePrecision("meter"),
+  position: doublePrecision("position"),
+
   status: defectStatus("status").notNull().default("PENDING_REVIEW"),
   defectType: text("defect_type"),
   rejectReason: text("reject_reason"),

@@ -1,0 +1,313 @@
+{
+  "id": "c873e416-7e62-4900-85bb-1b72b7eb1175",
+  "prevId": "47f48110-1cbc-42e3-a107-61ba82630000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.defect_events": {
+      "name": "defect_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "machine_id": {
+          "name": "machine_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mode": {
+          "name": "mode",
+          "type": "defect_mode",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "anomaly_score": {
+          "name": "anomaly_score",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bbox_x": {
+          "name": "bbox_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bbox_y": {
+          "name": "bbox_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bbox_w": {
+          "name": "bbox_w",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bbox_h": {
+          "name": "bbox_h",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frame_start": {
+          "name": "frame_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frame_end": {
+          "name": "frame_end",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidence_path": {
+          "name": "evidence_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "meter": {
+          "name": "meter",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "defect_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING_REVIEW'"
+        },
+        "defect_type": {
+          "name": "defect_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reject_reason": {
+          "name": "reject_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "defect_events_session_id_production_sessions_id_fk": {
+          "name": "defect_events_session_id_production_sessions_id_fk",
+          "tableFrom": "defect_events",
+          "tableTo": "production_sessions",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.labeled_samples": {
+      "name": "labeled_samples",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "defect_event_id": {
+          "name": "defect_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "label_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "defect_type": {
+          "name": "defect_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "exported_to_training": {
+          "name": "exported_to_training",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "labeled_samples_defect_event_id_defect_events_id_fk": {
+          "name": "labeled_samples_defect_event_id_defect_events_id_fk",
+          "tableFrom": "labeled_samples",
+          "tableTo": "defect_events",
+          "columnsFrom": [
+            "defect_event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.production_sessions": {
+      "name": "production_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "machine_id": {
+          "name": "machine_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "meters_produced": {
+          "name": "meters_produced",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "defect_count": {
+          "name": "defect_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.defect_mode": {
+      "name": "defect_mode",
+      "schema": "public",
+      "values": [
+        "penenunan",
+        "penjahitan"
+      ]
+    },
+    "public.defect_status": {
+      "name": "defect_status",
+      "schema": "public",
+      "values": [
+        "PENDING_REVIEW",
+        "CONFIRMED",
+        "FALSE_POSITIVE"
+      ]
+    },
+    "public.label_type": {
+      "name": "label_type",
+      "schema": "public",
+      "values": [
+        "confirmed",
+        "false_positive"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {
+    "public.defect_event_seq": {
+      "name": "defect_event_seq",
+      "schema": "public",
+      "increment": "1",
+      "startWith": "1",
+      "minValue": "1",
+      "maxValue": "9223372036854775807",
+      "cache": "1",
+      "cycle": false
+    }
+  },
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

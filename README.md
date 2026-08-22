@@ -36,7 +36,7 @@ curl http://localhost:8000/health
 | `npm run build` | Compile TypeScript ke `dist/` |
 | `npm start` | Jalankan build hasil `npm run build` |
 | `npm run typecheck` | Cek tipe tanpa emit |
-| `npm run db:generate` | Generate migration SQL dari `src/db/schema.ts` |
+| `npm run db:generate -- --name <nama_migration>` | Generate migration SQL dari `src/db/schema.ts` — **selalu pakai `--name`** (mis. `add_quality_map_fields`), jangan biarkan drizzle-kit generate nama acak |
 | `npm run db:migrate` | Terapkan migration ke database |
 
 ## Status implementasi
@@ -46,5 +46,5 @@ curl http://localhost:8000/health
 - [x] Fase 3 — Internal defect event ingestion: `POST /internal/defect-events` (auth `X-Internal-Key`, ID sekuensial `DEF-xxxxx`, simpan evidence crop).
 - [x] Fase 4 — Camera proxy: `POST /camera/start|stop`, `GET /camera/status` forward ke `MODEL_SERVICE_URL`, fallback `503 MODEL_SERVICE_UNAVAILABLE` kalau model service down.
 - [x] Fase 5 — WebSocket: `/ws/live` (publik, ke frontend) relay frame dari `/internal/ws/frames` (model service, auth `X-Internal-Key`) dan broadcast `defect_alert` saat defect event baru dibuat.
-- [ ] Fase 6 — Analytics
+- [x] Fase 6 — Analytics: `GET /analytics/summary`, `GET /analytics/quality-map`. Menambah kolom opsional `session_id`/`meter`/`position` ke `defect_events` (diisi model service saat ingestion) untuk mendukung quality map.
 - [ ] Fase 7 — Docker + polish

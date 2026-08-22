@@ -6,14 +6,21 @@
       "idx": 0,
       "version": "7",
       "when": 1787390900591,
-      "tag": "0000_gorgeous_hardball",
+      "tag": "0000_init_schema",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
       "when": 1787391690400,
-      "tag": "0001_right_beast",
+      "tag": "0001_add_defect_event_sequence",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787393210018,
+      "tag": "0002_add_quality_map_fields",
       "breakpoints": true
     }
   ]
