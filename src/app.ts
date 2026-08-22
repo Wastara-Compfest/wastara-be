@@ -6,6 +6,7 @@ import { ApiError } from "./lib/api-error.js";
 import { defectsRoute } from "./routes/defects.js";
 import { evidenceRoute } from "./routes/evidence.js";
 import { healthRoute } from "./routes/health.js";
+import { internalRoute } from "./routes/internal.js";
 import { verificationRoute } from "./routes/verification.js";
 
 export const app = new Hono();
@@ -16,6 +17,7 @@ app.route("/", healthRoute);
 app.route("/", defectsRoute);
 app.route("/", verificationRoute);
 app.route("/", evidenceRoute);
+app.route("/", internalRoute);
 
 app.notFound((c) =>
   c.json(

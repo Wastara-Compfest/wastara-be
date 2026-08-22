@@ -3,11 +3,17 @@ import {
   doublePrecision,
   integer,
   pgEnum,
+  pgSequence,
   pgTable,
   text,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+
+export const defectEventSeq = pgSequence("defect_event_seq", {
+  startWith: 1,
+  minValue: 1,
+});
 
 export const defectMode = pgEnum("defect_mode", ["penenunan", "penjahitan"]);
 
