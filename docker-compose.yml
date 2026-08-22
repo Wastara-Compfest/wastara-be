@@ -1,0 +1,35 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/evidence:/app/data/evidence
+    environment:
+      - DATABASE_URL=postgresql://wastara:wastara@db:5432/wastara
+      - EVIDENCE_DIR=/app/data/evidence
+      - MODEL_SERVICE_URL=${MODEL_SERVICE_URL:-http://host.docker.internal:8100}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY:-change-me}
+    command: sh -c "node dist/db/migrate.js && node dist/index.js"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wastara
+      POSTGRES_PASSWORD: wastara
+      POSTGRES_DB: wastara
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wastara"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
