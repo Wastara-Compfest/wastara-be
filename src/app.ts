@@ -3,13 +3,19 @@ import { logger } from "hono/logger";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { ApiError } from "./lib/api-error.js";
+import { defectsRoute } from "./routes/defects.js";
+import { evidenceRoute } from "./routes/evidence.js";
 import { healthRoute } from "./routes/health.js";
+import { verificationRoute } from "./routes/verification.js";
 
 export const app = new Hono();
 
 app.use(logger());
 
 app.route("/", healthRoute);
+app.route("/", defectsRoute);
+app.route("/", verificationRoute);
+app.route("/", evidenceRoute);
 
 app.notFound((c) =>
   c.json(

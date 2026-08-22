@@ -42,7 +42,7 @@ curl http://localhost:8000/health
 ## Status implementasi
 
 - [x] Fase 1 — Scaffolding: Hono app, koneksi DB (Drizzle + PostgreSQL), schema `defect_events`/`production_sessions`/`labeled_samples`, format error standar, `/health`.
-- [ ] Fase 2 — Defects & verification API
+- [x] Fase 2 — Defects & verification API: `GET /defects`, `GET /defects/:id`, `POST /verification/:id/confirm|reject`, insert `labeled_samples`, serve `/evidence/*`.
 - [ ] Fase 3 — Internal defect event ingestion
 - [ ] Fase 4 — Camera proxy
 - [ ] Fase 5 — WebSocket `/ws/live`
