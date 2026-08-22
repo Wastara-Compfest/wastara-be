@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.env
+data/evidence/*
+!data/evidence/.gitkeep
+*.log

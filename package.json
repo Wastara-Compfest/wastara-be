@@ -1,0 +1,38 @@
+{
+  "name": "wastara-be",
+  "version": "0.1.0",
+  "description": "Wastara backend API (Hono) — defect events, verification, analytics, camera proxy",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wastara-Compfest/wastara-be.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wastara-Compfest/wastara-be/issues"
+  },
+  "homepage": "https://github.com/Wastara-Compfest/wastara-be#readme",
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.3",
+    "postgres": "^3.4.9",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}
