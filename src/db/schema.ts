@@ -15,8 +15,6 @@ export const defectEventSeq = pgSequence("defect_event_seq", {
   minValue: 1,
 });
 
-export const defectMode = pgEnum("defect_mode", ["penenunan", "penjahitan"]);
-
 export const defectStatus = pgEnum("defect_status", [
   "PENDING_REVIEW",
   "CONFIRMED",
@@ -31,7 +29,6 @@ export const defectEvents = pgTable("defect_events", {
     .notNull()
     .defaultNow(),
   machineId: text("machine_id").notNull(),
-  mode: defectMode("mode").notNull(),
 
   anomalyScore: doublePrecision("anomaly_score").notNull(),
 
@@ -51,6 +48,9 @@ export const defectEvents = pgTable("defect_events", {
 
   status: defectStatus("status").notNull().default("PENDING_REVIEW"),
   defectType: text("defect_type"),
+  suggestedDefectType: text("suggested_defect_type"),
+  suggestionConfidence: doublePrecision("suggestion_confidence"),
+  suggestionMethod: text("suggestion_method"),
   rejectReason: text("reject_reason"),
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   verifiedBy: text("verified_by"),
