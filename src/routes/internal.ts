@@ -8,6 +8,7 @@ import { config } from "../config.js";
 import { db } from "../db/client.js";
 import { defectEvents } from "../db/schema.js";
 import { ApiError } from "../lib/api-error.js";
+import { defectTypeSchema } from "../lib/defect-types.js";
 import { nextDefectId } from "../lib/generate-defect-id.js";
 import { serializeDefectEvent } from "../lib/serializers.js";
 import { broadcast } from "../ws/hub.js";
@@ -16,7 +17,6 @@ const MAX_EVIDENCE_BYTES = 500 * 1024;
 
 const payloadSchema = z.object({
   machine_id: z.string().min(1),
-  mode: z.enum(["penenunan", "penjahitan"]),
   anomaly_score: z.number().min(0).max(1),
   bbox: z.object({
     x: z.number().int(),
@@ -28,6 +28,9 @@ const payloadSchema = z.object({
     start: z.number().int(),
     end: z.number().int(),
   }),
+  suggested_defect_type: defectTypeSchema.optional(),
+  suggestion_confidence: z.number().min(0).max(1).optional(),
+  suggestion_method: z.string().max(64).optional(),
   session_id: z.string().uuid().optional(),
   meter: z.number().nonnegative().optional(),
   position: z.number().min(0).max(1).optional(),
@@ -96,7 +99,6 @@ internalRoute.post("/internal/defect-events", async (c) => {
     .values({
       id,
       machineId: body.machine_id,
-      mode: body.mode,
       anomalyScore: body.anomaly_score,
       bboxX: body.bbox.x,
       bboxY: body.bbox.y,
@@ -108,6 +110,9 @@ internalRoute.post("/internal/defect-events", async (c) => {
       sessionId: body.session_id,
       meter: body.meter,
       position: body.position,
+      suggestedDefectType: body.suggested_defect_type,
+      suggestionConfidence: body.suggestion_confidence,
+      suggestionMethod: body.suggestion_method,
     })
     .returning();
 

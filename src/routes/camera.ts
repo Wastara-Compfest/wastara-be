@@ -8,7 +8,6 @@ import { callModelService } from "../lib/model-service-client.js";
 const startSchema = z.object({
   source: z.string().min(1),
   machine_id: z.string().min(1),
-  mode: z.enum(["penenunan", "penjahitan"]),
 });
 
 export const cameraRoute = new Hono();

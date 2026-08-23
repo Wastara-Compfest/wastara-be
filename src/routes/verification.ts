@@ -5,9 +5,10 @@ import { z } from "zod";
 import { db } from "../db/client.js";
 import { defectEvents, labeledSamples } from "../db/schema.js";
 import { ApiError } from "../lib/api-error.js";
+import { defectTypeSchema } from "../lib/defect-types.js";
 
 const confirmSchema = z.object({
-  defect_type: z.string().min(1),
+  defect_type: defectTypeSchema,
   verified_by: z.string().min(1),
 });
 
