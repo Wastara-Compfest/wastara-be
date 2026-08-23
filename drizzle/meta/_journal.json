@@ -19,8 +19,22 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1787393210018,
+      "when": 1787393000000,
       "tag": "0002_add_quality_map_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787395000000,
+      "tag": "0003_add_suggestion_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787396000000,
+      "tag": "0004_remove_defect_mode",
       "breakpoints": true
     }
   ]
