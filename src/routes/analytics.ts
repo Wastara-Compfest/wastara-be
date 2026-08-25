@@ -8,7 +8,7 @@ import { ApiError } from "../lib/api-error.js";
 
 const summaryQuerySchema = z.object({
   machine_id: z.string().optional(),
-  hours: z.coerce.number().positive().max(24 * 30).optional().default(24),
+  hours: z.coerce.number().positive().max(24 * 30).optional(),
 });
 
 const qualityMapQuerySchema = z.object({
@@ -27,10 +27,10 @@ analyticsRoute.get("/analytics/summary", async (c) => {
     );
   }
   const { machine_id, hours } = parsed.data;
-  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const since = hours ? new Date(Date.now() - hours * 60 * 60 * 1000) : undefined;
 
   const defectConditions = [
-    gte(defectEvents.createdAt, since),
+    since ? gte(defectEvents.createdAt, since) : undefined,
     machine_id ? eq(defectEvents.machineId, machine_id) : undefined,
   ].filter((cnd): cnd is NonNullable<typeof cnd> => cnd !== undefined);
 
@@ -50,22 +50,9 @@ analyticsRoute.get("/analytics/summary", async (c) => {
   const potentialDefects =
     counts.PENDING_REVIEW + counts.CONFIRMED + counts.FALSE_POSITIVE;
 
-  const sessionConditions = [
-    gte(productionSessions.startedAt, since),
-    machine_id ? eq(productionSessions.machineId, machine_id) : undefined,
-  ].filter((cnd): cnd is NonNullable<typeof cnd> => cnd !== undefined);
-
-  const [metersRow] = await db
-    .select({
-      total: sql<number>`coalesce(sum(${productionSessions.metersProduced}), 0)::float`,
-    })
-    .from(productionSessions)
-    .where(and(...sessionConditions));
-
-  const metersInspected = metersRow?.total ?? 0;
   const defectRatePercent =
-    metersInspected > 0
-      ? Math.round((potentialDefects / metersInspected) * 100 * 100) / 100
+    potentialDefects > 0
+      ? Math.round((counts.CONFIRMED / potentialDefects) * 100 * 100) / 100
       : 0;
 
   return c.json({
@@ -75,7 +62,6 @@ analyticsRoute.get("/analytics/summary", async (c) => {
     false_positives: counts.FALSE_POSITIVE,
     pending_review: counts.PENDING_REVIEW,
     defect_rate_percent: defectRatePercent,
-    meters_inspected: metersInspected,
   });
 });
 

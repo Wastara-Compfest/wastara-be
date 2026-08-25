@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
@@ -11,6 +13,32 @@ const startSchema = z.object({
 });
 
 export const cameraRoute = new Hono();
+
+cameraRoute.post("/camera/upload", async (c) => {
+  const body = await c.req.parseBody();
+  const file = body["file"];
+  if (!file || !(file instanceof File)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "File video harus diunggah");
+  }
+
+  const uploadsDir = path.resolve("data/uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const ext = path.extname(file.name);
+  const filename = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
+  const filepath = path.join(uploadsDir, filename);
+
+  const arrayBuffer = await file.arrayBuffer();
+  fs.writeFileSync(filepath, Buffer.from(arrayBuffer));
+
+  const absolutePath = path.resolve(filepath);
+  return c.json({
+    status: "success",
+    filepath: absolutePath,
+  });
+});
 
 cameraRoute.post("/camera/start", async (c) => {
   const parsed = startSchema.safeParse(await c.req.json().catch(() => ({})));
