@@ -12,6 +12,7 @@ import { evidenceRoute } from "./routes/evidence.js";
 import { healthRoute } from "./routes/health.js";
 import { internalRoute } from "./routes/internal.js";
 import { verificationRoute } from "./routes/verification.js";
+import { videoInspectionsRoute } from "./routes/video-inspections.js";
 
 export const app = new Hono();
 
@@ -32,6 +33,7 @@ app.route("/", verificationRoute);
 app.route("/", evidenceRoute);
 app.route("/", internalRoute);
 app.route("/", analyticsRoute);
+app.route("/", videoInspectionsRoute);
 
 app.notFound((c) =>
   c.json(

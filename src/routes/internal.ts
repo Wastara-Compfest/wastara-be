@@ -4,9 +4,11 @@ import path from "node:path";
 import { Hono } from "hono";
 import { z } from "zod";
 
+import { eq } from "drizzle-orm";
+
 import { config } from "../config.js";
 import { db } from "../db/client.js";
-import { defectEvents } from "../db/schema.js";
+import { defectEvents, videoInspections } from "../db/schema.js";
 import { ApiError } from "../lib/api-error.js";
 import { defectTypeSchema } from "../lib/defect-types.js";
 import { nextDefectId } from "../lib/generate-defect-id.js";
@@ -34,6 +36,7 @@ const payloadSchema = z.object({
   session_id: z.string().uuid().optional(),
   meter: z.number().nonnegative().optional(),
   position: z.number().min(0).max(1).optional(),
+  video_inspection_id: z.string().uuid().optional(),
 });
 
 export const internalRoute = new Hono();
@@ -110,6 +113,7 @@ internalRoute.post("/internal/defect-events", async (c) => {
       sessionId: body.session_id,
       meter: body.meter,
       position: body.position,
+      videoInspectionId: body.video_inspection_id,
       suggestedDefectType: body.suggested_defect_type,
       suggestionConfidence: body.suggestion_confidence,
       suggestionMethod: body.suggestion_method,
@@ -121,4 +125,48 @@ internalRoute.post("/internal/defect-events", async (c) => {
   );
 
   return c.json({ id, status: "PENDING_REVIEW" }, 201);
+});
+
+const completeSchema = z.object({
+  status: z.enum(["done", "failed"]),
+  defect_count: z.number().int().nonnegative().optional(),
+  error_message: z.string().nullable().optional(),
+});
+
+internalRoute.post("/internal/video-inspections/:id/complete", async (c) => {
+  const id = c.req.param("id");
+  const parsed = completeSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) {
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      parsed.error.issues.map((i) => i.message).join(", "),
+    );
+  }
+  const { status, defect_count, error_message } = parsed.data;
+
+  const [updated] = await db
+    .update(videoInspections)
+    .set({
+      status,
+      completedAt: new Date(),
+      defectCount: defect_count ?? 0,
+      errorMessage: error_message ?? null,
+    })
+    .where(eq(videoInspections.id, id))
+    .returning();
+  if (!updated) {
+    throw new ApiError(404, "NOT_FOUND", "Job tidak ditemukan");
+  }
+
+  broadcast(
+    JSON.stringify({
+      type: "inspection_complete",
+      inspection_id: id,
+      status: updated.status,
+      defect_count: updated.defectCount,
+    }),
+  );
+
+  return c.json({ id, status: updated.status });
 });
