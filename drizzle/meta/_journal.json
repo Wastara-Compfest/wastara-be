@@ -36,6 +36,13 @@
       "when": 1787396000000,
       "tag": "0004_remove_defect_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787397000000,
+      "tag": "0005_add_video_inspections",
+      "breakpoints": true
     }
   ]
 }
