@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -16,6 +17,7 @@ import { broadcast } from "../ws/hub.js";
 const MAX_EVIDENCE_BYTES = 500 * 1024;
 
 const payloadSchema = z.object({
+  event_key: z.string().min(1).max(128).optional(),
   machine_id: z.string().min(1),
   anomaly_score: z.number().min(0).max(1),
   bbox: z.object({
@@ -87,38 +89,64 @@ internalRoute.post("/internal/defect-events", async (c) => {
     );
   }
 
-  const id = await nextDefectId();
+  const existing = body.event_key
+    ? (
+        await db
+          .select()
+          .from(defectEvents)
+          .where(eq(defectEvents.sourceEventKey, body.event_key))
+          .limit(1)
+      )[0]
+    : undefined;
+
+  const id = existing?.id ?? (await nextDefectId());
   const evidenceFilename = `${id}.jpg`;
 
   await mkdir(config.evidenceDir, { recursive: true });
   const buffer = Buffer.from(await evidence.arrayBuffer());
   await writeFile(path.join(config.evidenceDir, evidenceFilename), buffer);
 
-  const [inserted] = await db
-    .insert(defectEvents)
-    .values({
-      id,
-      machineId: body.machine_id,
-      anomalyScore: body.anomaly_score,
-      bboxX: body.bbox.x,
-      bboxY: body.bbox.y,
-      bboxW: body.bbox.w,
-      bboxH: body.bbox.h,
-      frameStart: body.frames.start,
-      frameEnd: body.frames.end,
-      evidencePath: evidenceFilename,
-      sessionId: body.session_id,
-      meter: body.meter,
-      position: body.position,
-      suggestedDefectType: body.suggested_defect_type,
-      suggestionConfidence: body.suggestion_confidence,
-      suggestionMethod: body.suggestion_method,
-    })
-    .returning();
+  const values = {
+    machineId: body.machine_id,
+    anomalyScore: existing
+      ? Math.max(existing.anomalyScore, body.anomaly_score)
+      : body.anomaly_score,
+    bboxX: body.bbox.x,
+    bboxY: body.bbox.y,
+    bboxW: body.bbox.w,
+    bboxH: body.bbox.h,
+    frameStart: existing
+      ? Math.min(existing.frameStart, body.frames.start)
+      : body.frames.start,
+    frameEnd: existing
+      ? Math.max(existing.frameEnd, body.frames.end)
+      : body.frames.end,
+    evidencePath: evidenceFilename,
+    sessionId: body.session_id,
+    meter: body.meter,
+    position: body.position,
+    suggestedDefectType: body.suggested_defect_type,
+    suggestionConfidence: body.suggestion_confidence,
+    suggestionMethod: body.suggestion_method,
+  };
+
+  const [saved] = existing
+    ? await db
+        .update(defectEvents)
+        .set(values)
+        .where(eq(defectEvents.id, existing.id))
+        .returning()
+    : await db
+        .insert(defectEvents)
+        .values({ id, sourceEventKey: body.event_key, ...values })
+        .returning();
 
   broadcast(
-    JSON.stringify({ type: "defect_alert", defect: serializeDefectEvent(inserted) }),
+    JSON.stringify({ type: "defect_alert", defect: serializeDefectEvent(saved) }),
   );
 
-  return c.json({ id, status: "PENDING_REVIEW" }, 201);
+  return c.json(
+    { id, status: saved.status },
+    existing ? 200 : 201,
+  );
 });
