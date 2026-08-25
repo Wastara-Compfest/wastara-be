@@ -25,6 +25,7 @@ export const labelType = pgEnum("label_type", ["confirmed", "false_positive"]);
 
 export const defectEvents = pgTable("defect_events", {
   id: text("id").primaryKey(),
+  sourceEventKey: text("source_event_key").unique(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
