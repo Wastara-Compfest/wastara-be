@@ -25,3 +25,25 @@ export async function callModelService(
   const responseBody = await res.json().catch(() => null);
   return { status: res.status, body: responseBody };
 }
+
+export async function callModelServiceMultipart(
+  path: string,
+  form: FormData,
+): Promise<{ status: number; body: unknown }> {
+  let res: Response;
+  try {
+    res = await fetch(`${config.modelServiceUrl}${path}`, {
+      method: "POST",
+      body: form,
+    });
+  } catch {
+    throw new ApiError(
+      503,
+      "MODEL_SERVICE_UNAVAILABLE",
+      "Model service tidak dapat dihubungi",
+    );
+  }
+
+  const responseBody = await res.json().catch(() => null);
+  return { status: res.status, body: responseBody };
+}
