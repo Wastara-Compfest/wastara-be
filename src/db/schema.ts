@@ -23,6 +23,13 @@ export const defectStatus = pgEnum("defect_status", [
 
 export const labelType = pgEnum("label_type", ["confirmed", "false_positive"]);
 
+export const videoInspectionStatus = pgEnum("video_inspection_status", [
+  "queued",
+  "processing",
+  "done",
+  "failed",
+]);
+
 export const defectEvents = pgTable("defect_events", {
   id: text("id").primaryKey(),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -45,6 +52,9 @@ export const defectEvents = pgTable("defect_events", {
   sessionId: uuid("session_id").references(() => productionSessions.id),
   meter: doublePrecision("meter"),
   position: doublePrecision("position"),
+  videoInspectionId: uuid("video_inspection_id").references(
+    () => videoInspections.id,
+  ),
 
   status: defectStatus("status").notNull().default("PENDING_REVIEW"),
   defectType: text("defect_type"),
@@ -64,6 +74,20 @@ export const productionSessions = pgTable("production_sessions", {
     .defaultNow(),
   metersProduced: doublePrecision("meters_produced"),
   defectCount: integer("defect_count").notNull().default(0),
+});
+
+export const videoInspections = pgTable("video_inspections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  machineId: text("machine_id").notNull(),
+  filename: text("filename").notNull(),
+  videoPath: text("video_path").notNull(),
+  status: videoInspectionStatus("status").notNull().default("queued"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  defectCount: integer("defect_count").notNull().default(0),
+  errorMessage: text("error_message"),
 });
 
 export const labeledSamples = pgTable("labeled_samples", {
